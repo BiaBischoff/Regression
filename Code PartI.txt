@@ -1,0 +1,152 @@
+# Importing Libraries
+import pandas as pd
+from pandas import DataFrame
+import numpy as np
+
+# Libraries for Visualization Purposes
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Statistical Libraries
+import pylab
+import sklearn
+import statsmodels.api as sm
+import statistics
+from scipy import stats
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn import metrics
+
+import seaborn as sns
+from sklearn import preprocessing
+from sklearn.preprocessing import scale
+from sklearn.decomposition import PCA
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.stats import norm, skew
+from scipy import stats
+# sklearn modules for data preprocessing:
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import StandardScaler
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import confusion_matrix
+
+# sklearn modules for Model Selection:
+from sklearn import svm, tree, linear_model, neighbors
+from sklearn import naive_bayes, ensemble, discriminant_analysis, gaussian_process
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+
+# sklearn modules for Model Evaluation & Improvement:
+from sklearn.metrics import confusion_matrix, accuracy_score
+from sklearn.metrics import f1_score, precision_score, recall_score, fbeta_score
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import ShuffleSplit
+from sklearn.model_selection import KFold
+from sklearn import feature_selection
+from sklearn import model_selection
+from sklearn import metrics
+from sklearn.metrics import classification_report, precision_recall_curve
+from sklearn.metrics import auc, roc_auc_score, roc_curve
+from sklearn.metrics import make_scorer, recall_score, log_loss
+from sklearn.metrics import average_precision_score
+
+# Since I chose chi-square method, we have to import chisquare from SciPy.stats
+from scipy.stats import chisquare
+from scipy.stats import chi2_contingency
+
+# Loading the Clean Churn Dataset from D206
+df = pd.read_csv('/Users/bia/Desktop/churn_clean.csv')
+df_stats = df.describe()
+# print(df_stats)
+
+#Dropping Columns Job, Timezone, Education and customer_ID
+churn_df = df.drop(columns=['Job', 'Timezone', 'Customer_id', 'Education'])
+
+#Dropping the 1st column "unnamed"
+churn_df2 = churn_df.iloc[:,1:]
+
+#Changing Variables from NO/YES to 0/1
+churn_df2.Churn.replace({"Yes":1, "No":0}, inplace = True)
+churn_df2.Phone.replace({"Yes":1, "No":0}, inplace = True)
+churn_df2.PaperlessBilling.replace({"Yes":1, "No":0}, inplace = True)
+churn_df2.Techie.replace({"Yes":1, "No":0}, inplace = True)
+churn_df2.Port_modem.replace({"Yes":1, "No":0}, inplace = True)
+churn_df2.Tablet.replace({"Yes":1, "No":0}, inplace = True)
+churn_df2.Multiple.replace({"Yes":1, "No":0}, inplace = True)
+churn_df2.OnlineSecurity.replace({"Yes":1, "No":0}, inplace = True)
+churn_df2.OnlineBackup.replace({"Yes":1, "No":0}, inplace = True)
+churn_df2.DeviceProtection.replace({"Yes":1, "No":0}, inplace = True)
+churn_df2.TechSupport.replace({"Yes":1, "No":0}, inplace = True)
+churn_df2.StreamingTV.replace({"Yes":1, "No":0}, inplace = True)
+churn_df2.StreamingMovies.replace({"Yes":1, "No":0}, inplace = True)
+#
+#Creating a dummy variable for some of the categorical variables with 3 or more levels
+dummy1 = pd.get_dummies(churn_df2, columns=['Marital', 'Contract', 'PaymentMethod', 'Gender', 'InternetService', 'Area',
+                                            'Employment'])
+
+#Adding the results to the master dataframe
+churn_df2 = pd.concat([churn_df2, dummy1], axis=1)
+
+#We have created dummies for the below variables, so we can drop them
+churn_df2 = churn_df2.drop(['Marital', 'Contract', 'PaymentMethod', 'Gender', 'InternetService', 'Area',
+                            'Employment'], 1)
+
+# #Dropping Bandwidth due to its highly correlation with Tenure
+churn_df2 = churn_df2.drop(columns=['Bandwidth_GB_Year'])
+# #Dropping Customer Survey Answers
+churn_df2 = churn_df2.drop(columns=['CS Responses', 'CS Fixes', 'CS Replacements', 'CS Reliability', 'CS Options',
+                                    'CS Respectfulness', 'CS Courteous', 'CS Listening'])
+
+# dataset = churn_df2[['Children', 'Age', 'Income', 'PaperlessBilling', 'Phone','Outage_sec_perweek', 'Email',
+#                      'Contacts', 'Yearly_equip_failure', 'StreamingTV', 'StreamingMovies',
+#                     'Tenure', 'MonthlyCharge', 'Tablet', 'OnlineSecurity', 'OnlineBackup','DeviceProtection',
+#                      'TechSupport', 'Bandwidth_GB_Year', 'CS Responses', 'CS Fixes', 'CS Replacements', 'Techie',
+#                      'Port_modem', 'CS Reliability', 'CS Options', 'CS Respectfulness', 'CS Courteous', 'CS Listening']]
+#
+# #Independent Variables and Churn Rate Positive and Negative Correlations
+# correlations = dataset.corrwith(churn_df2.Churn)
+# correlations = correlations[correlations!=1]
+# positive_correlations = correlations[correlations >0].sort_values(ascending = False)
+# negative_correlations =correlations[correlations<0].sort_values(ascending = False)
+# print('Most Positive Correlations: \n', positive_correlations)
+# print('\nMost Negative Correlations: \n', negative_correlations)
+#
+# #Creating Correlations
+# correlations = dataset.corrwith(churn_df2.Churn)
+# correlations = correlations[correlations!=1]
+# correlations.plot.bar(figsize = (18, 10), fontsize = 15, color = '#ec838a', rot = 45, grid = True)
+# plt.title('Correlation with Churn Rate \n', horizontalalignment="center", fontstyle = "normal", fontsize = "22",
+#           fontfamily = "sans-serif")
+# plt.show()
+
+churn_df2.head()
+
+#Function to calculate VIF
+def calculate_vif(churn_df2):
+    vif_df = pd.DataFrame(columns = ['Variables', 'VIF'])
+    x_var_names = churn_df2.columns
+    for i in range(0, x_var_names.shape[0]):
+        y = churn_df2[x_var_names[i]]
+        x = churn_df2[x_var_names.drop([x_var_names[i]])]
+        r_squared = sm.OLS(y,x).fit().rsquared
+        vif = round(1/(1-r_squared),2)
+        vif_df.loc[i] = [x_var_names[i], vif]
+        return vif_df.sort_values(by = 'VIF', axis = 0, ascending=False, inplace=False)
+    print(vif_df)
+        #X axis is everything but Churn
+    X = df.drop(['Churn'],axis=1)
+    calculate_vif(X)
